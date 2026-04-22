@@ -112,6 +112,7 @@
           const [nisn, setNisn] = useState('');
           const [username, setUsername] = useState('');
           const [password, setPassword] = useState('');
+          const [showPassword, setShowPassword] = useState(false);
           const [loading, setLoading] = useState(false);
           const [error, setError] = useState('');
 
@@ -164,7 +165,11 @@
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-green-900">Password</label>
-                          <input type="password" required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" value={password} onChange={(e) => setPassword(e.target.value)} />
+                          <input type={showPassword ? "text" : "password"} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" value={password} onChange={(e) => setPassword(e.target.value)} />
+                          <div className="flex items-center mt-3">
+                            <input type="checkbox" id="show-password" checked={showPassword} onChange={(e) => setShowPassword(e.target.checked)} className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded cursor-pointer" />
+                            <label htmlFor="show-password" className="ml-2 block text-sm text-gray-700 cursor-pointer">Tampilkan password</label>
+                          </div>
                         </div>
                       </React.Fragment>
                     )}
@@ -219,7 +224,15 @@
                     {student.message && <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 italic text-green-900 text-sm">"{student.message}"</div>}
                     {isLulus && (
                        <div className="mt-8">
-                         <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg shadow transition">Cetak Surat Keterangan Lulus (SKL)</button>
+                         {settings.linkSkl ? (
+                           <a href={settings.linkSkl} target="_blank" rel="noreferrer" className="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg shadow transition">
+                             Unduh Surat Keterangan Lulus (SKL)
+                           </a>
+                         ) : (
+                           <button className="bg-gray-400 text-white font-medium py-2.5 px-6 rounded-lg shadow opacity-70 cursor-not-allowed" disabled>
+                             SKL Belum Tersedia
+                           </button>
+                         )}
                        </div>
                     )}
                   </div>
@@ -233,6 +246,7 @@
           const [students, setStudents] = useState([]);
           const [loading, setLoading] = useState(true);
           const [search, setSearch] = useState('');
+          const [selectedStudents, setSelectedStudents] = useState([]);
           const [isModalOpen, setIsModalOpen] = useState(false);
           const [editingData, setEditingData] = useState(null);
           const [formData, setFormData] = useState({ nisn: '', name: '', status: 'Lulus', message: '' });
@@ -270,10 +284,42 @@
             if (window.confirm("Yakin ingin menghapus data siswa ini?")) {
               await apiService.deleteStudent(id);
               await loadData();
+              setSelectedStudents(prev => prev.filter(studentId => studentId !== id));
+            }
+          };
+
+          const handleBulkDelete = async () => {
+            if (window.confirm(`Yakin ingin menghapus ${selectedStudents.length} data siswa terpilih secara permanen?`)) {
+              setLoading(true);
+              try {
+                // Proses hapus secara asinkron menggunakan Promise.all
+                await Promise.all(selectedStudents.map(id => apiService.deleteStudent(id)));
+                setSelectedStudents([]);
+                await loadData();
+              } catch(e) { 
+                alert("Beberapa data gagal dihapus"); 
+                await loadData();
+              }
             }
           };
 
           const filteredStudents = students.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || s.nisn.includes(search));
+
+          const handleSelectAll = (e) => {
+            if (e.target.checked) {
+              setSelectedStudents(filteredStudents.map(s => s.id));
+            } else {
+              setSelectedStudents([]);
+            }
+          };
+
+          const handleSelectRow = (id) => {
+            if (selectedStudents.includes(id)) {
+              setSelectedStudents(prev => prev.filter(sId => sId !== id));
+            } else {
+              setSelectedStudents(prev => [...prev, id]);
+            }
+          };
 
           return (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -282,9 +328,16 @@
                   <h2 className="text-xl font-bold text-green-900">Kelola Data Siswa</h2>
                   <p className="text-sm text-green-700">Input dan perbarui status kelulusan siswa.</p>
                 </div>
-                <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-green-900 font-bold px-4 py-2 rounded-lg shadow-sm transition">
-                  <UserPlus size={18} /> Tambah Siswa
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedStudents.length > 0 && (
+                    <button onClick={handleBulkDelete} className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-lg shadow-sm transition">
+                      <Trash2 size={18} /> Hapus Terpilih ({selectedStudents.length})
+                    </button>
+                  )}
+                  <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-green-900 font-bold px-4 py-2 rounded-lg shadow-sm transition">
+                    <UserPlus size={18} /> Tambah Siswa
+                  </button>
+                </div>
               </div>
               <div className="p-4 sm:p-6 border-b border-gray-100 bg-green-50/30">
                 <div className="relative max-w-md">
@@ -296,6 +349,9 @@
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-green-50 text-green-800 text-sm uppercase tracking-wider border-b border-green-200">
+                      <th className="p-4 w-12 text-center">
+                        <input type="checkbox" className="h-4 w-4 text-green-600 border-gray-300 rounded cursor-pointer" checked={selectedStudents.length === filteredStudents.length && filteredStudents.length > 0} onChange={handleSelectAll} />
+                      </th>
                       <th className="p-4 font-bold w-12">No</th>
                       <th className="p-4 font-bold">NISN</th>
                       <th className="p-4 font-bold">Nama Lengkap</th>
@@ -304,10 +360,13 @@
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm">
-                    {loading ? (<tr><td colSpan="5" className="p-8 text-center text-green-600"><Loader2 size={24} className="mx-auto mb-2" /> Memuat data...</td></tr>) 
-                    : filteredStudents.length === 0 ? (<tr><td colSpan="5" className="p-8 text-center text-gray-500">Tidak ada data.</td></tr>) 
+                    {loading ? (<tr><td colSpan="6" className="p-8 text-center text-green-600"><Loader2 size={24} className="mx-auto mb-2" /> Memuat data...</td></tr>) 
+                    : filteredStudents.length === 0 ? (<tr><td colSpan="6" className="p-8 text-center text-gray-500">Tidak ada data.</td></tr>) 
                     : filteredStudents.map((s, index) => (
                       <tr key={s.id} className="hover:bg-green-50/50 transition-colors">
+                        <td className="p-4 text-center">
+                          <input type="checkbox" className="h-4 w-4 text-green-600 border-gray-300 rounded cursor-pointer" checked={selectedStudents.includes(s.id)} onChange={() => handleSelectRow(s.id)} />
+                        </td>
                         <td className="p-4 text-gray-500">{index + 1}</td>
                         <td className="p-4 font-bold text-green-900">{s.nisn}</td>
                         <td className="p-4 font-medium text-gray-800">{s.name}</td>
@@ -454,6 +513,11 @@
                   <label className="block text-sm font-bold text-green-900 mb-1">Alamat Lengkap Sekolah</label>
                   <textarea rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 text-sm" value={formData.alamatSekolah} onChange={(e) => setFormData({...formData, alamatSekolah: e.target.value})}></textarea>
                 </div>
+                <div>
+                  <label className="block text-sm font-bold text-green-900 mb-1">Tautan Softcopy SKL (Google Drive/Lainnya)</label>
+                  <input type="url" placeholder="https://drive.google.com/..." className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 text-sm" value={formData.linkSkl || ''} onChange={(e) => setFormData({...formData, linkSkl: e.target.value})} />
+                  <p className="text-xs text-green-700 mt-1">Siswa yang berstatus "Lulus" akan diarahkan ke tautan ini saat mengklik unduh SKL.</p>
+                </div>
                 <div className="pt-4">
                   <button type="submit" disabled={saving} className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-green-900 rounded-lg font-bold flex items-center gap-2 shadow-sm transition">
                     {saving ? <Loader2 size={16} /> : 'Simpan Pengaturan'}
@@ -505,7 +569,8 @@
           const [settings, setSettings] = useState({ 
               namaSekolah: 'Portal Pengumuman Kelulusan', 
               alamatSekolah: '', 
-              tahunAjaran: '2025/2026' 
+              tahunAjaran: '2025/2026',
+              linkSkl: ''
           });
           const [loadingSettings, setLoadingSettings] = useState(true);
 
