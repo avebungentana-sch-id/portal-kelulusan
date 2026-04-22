@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Pengumuman Kelulusan</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        body { overflow-x: hidden; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        /* =====================================================================
+         * 1. KOMPONEN ICON
+         * ===================================================================== */
+        const Icon = ({ children, size=24, className="" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+        const GraduationCap = (p) => <Icon {...p}><path d="M21.42 10.922a2 2 0 0 0-.019-3.838L12.83 4.1a2 2 0 0 0-1.66 0L2.6 7.08a2 2 0 0 0 0 3.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></Icon>;
+        const Users = (p) => <Icon {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Icon>;
+        const UserPlus = (p) => <Icon {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></Icon>;
+        const LogOut = (p) => <Icon {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>;
+        const CheckCircle = (p) => <Icon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Icon>;
+        const XCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></Icon>;
+        const Search = (p) => <Icon {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Icon>;
+        const Edit = (p) => <Icon {...p}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></Icon>;
+        const Trash2 = (p) => <Icon {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></Icon>;
+        const ShieldAlert = (p) => <Icon {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></Icon>;
+        const Menu = (p) => <Icon {...p}><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></Icon>;
+        const X = (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>;
+        const SettingsIcon = (p) => <Icon {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></Icon>;
+        const Loader2 = ({size=24, className=""}) => <Icon size={size} className={`${className} animate-spin`}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></Icon>;
+
+        /* =====================================================================
+         * 2. API SERVICE (TERHUBUNG KE GOOGLE APPS SCRIPT)
+         * ===================================================================== */
+        
+        // GANTI URL DI BAWAH INI DENGAN WEB APP URL DARI GOOGLE APPS SCRIPT ANDA
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx7_vw-dNXB2Z6a7IbVyhQC7y2xWLGqN0sny5xryOGB9v-DDxg1qjddmsSuVSyuPRFWQg/exec";
+
+        const apiFetch = async (action, payload = {}) => {
+          // Validasi URL untuk mencegah crash sebelum URL diatur dengan benar
+          if (!GAS_URL.startsWith('http')) {
+            throw new Error('URL Google Apps Script belum diatur. Silakan ganti teks "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_DISINI" dengan URL Deployment yang sebenarnya.');
+          }
+          
+          try {
+            const response = await fetch(GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action, payload })
+            });
+            const result = await response.json();
+            if (result.status === 'error') throw new Error(result.message);
+            return result.data;
+          } catch (error) {
+            console.error(`API Error (${action}):`, error);
+            throw new Error(error.message || 'Terjadi kesalahan koneksi ke server.');
+          }
+        };
+
+        const apiService = {
+          loginAdmin: async (username, password) => apiFetch('loginAdmin', { username, password }),
+          loginStudent: async (nisn) => apiFetch('loginStudent', { nisn }),
+          getStudents: async () => apiFetch('getStudents'),
+          saveStudent: async (data) => apiFetch('saveStudent', data),
+          deleteStudent: async (id) => apiFetch('deleteStudent', { id }),
+          getAdmins: async () => apiFetch('getAdmins'),
+          saveAdmin: async (data) => apiFetch('saveAdmin', data),
+          deleteAdmin: async (id) => apiFetch('deleteAdmin', { id }),
+          getSettings: async () => apiFetch('getSettings'),
+          saveSettings: async (data) => apiFetch('saveSettings', data)
+        };
+
+        /* =====================================================================
+         * 3. KOMPONEN UI UTAMA
+         * ===================================================================== */
+        const Modal = ({ isOpen, onClose, title, children }) => {
+          if (!isOpen) return null;
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+              <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-full">
+                <div className="flex justify-between items-center p-4 border-b">
+                  <h3 className="text-lg font-bold text-gray-800">{title}</h3>
+                  <button onClick={onClose} className="text-gray-500 hover:text-gray-700 transition">
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="p-4 overflow-y-auto">
+                  {children}
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const LoginView = ({ onLoginSuccess, settings }) => {
+          const [loginType, setLoginType] = useState('siswa');
+          const [nisn, setNisn] = useState('');
+          const [username, setUsername] = useState('');
+          const [password, setPassword] = useState('');
+          const [loading, setLoading] = useState(false);
+          const [error, setError] = useState('');
+
+          const handleLogin = async (e) => {
+            e.preventDefault();
+            setLoading(true); setError('');
+            try {
+              if (loginType === 'siswa') {
+                if (!nisn) throw new Error("NISN harus diisi");
+                const student = await apiService.loginStudent(nisn);
+                onLoginSuccess({ type: 'siswa', data: student });
+              } else {
+                if (!username || !password) throw new Error("Username dan Password harus diisi");
+                const admin = await apiService.loginAdmin(username, password);
+                onLoginSuccess({ type: 'admin', data: admin });
+              }
+            } catch (err) { setError(err.message || 'Terjadi kesalahan saat login'); } 
+            finally { setLoading(false); }
+          };
+
+          return (
+            <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+              <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="flex justify-center">
+                  <div className="h-20 w-20 bg-green-600 rounded-full flex items-center justify-center shadow-lg ring-4 ring-yellow-400">
+                    <GraduationCap size={40} className="text-white" />
+                  </div>
+                </div>
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-green-900">{settings.namaSekolah}</h2>
+                <p className="mt-2 text-center text-sm text-green-700 font-medium">Tahun Ajaran {settings.tahunAjaran}</p>
+              </div>
+              <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="bg-white py-8 px-4 shadow-xl sm:rounded-xl sm:px-10 border border-gray-100">
+                  <div className="flex border-b border-gray-200 mb-6">
+                    <button className={`flex-1 py-2 text-center font-bold text-sm transition-colors ${loginType === 'siswa' ? 'border-b-4 border-yellow-500 text-green-700' : 'text-gray-400 hover:text-green-600'}`} onClick={() => { setLoginType('siswa'); setError(''); }}>Masuk Siswa</button>
+                    <button className={`flex-1 py-2 text-center font-bold text-sm transition-colors ${loginType === 'admin' ? 'border-b-4 border-yellow-500 text-green-700' : 'text-gray-400 hover:text-green-600'}`} onClick={() => { setLoginType('admin'); setError(''); }}>Masuk Admin</button>
+                  </div>
+                  <form onSubmit={handleLogin} className="space-y-6">
+                    {error && <div className="bg-red-50 border-l-4 border-red-500 p-4 text-sm text-red-700">{error}</div>}
+                    {loginType === 'siswa' ? (
+                      <div>
+                        <label className="block text-sm font-medium text-green-900">Nomor Induk Siswa Nasional (NISN)</label>
+                        <input type="text" required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Masukkan NISN Anda" value={nisn} onChange={(e) => setNisn(e.target.value)} />
+                      </div>
+                    ) : (
+                      <React.Fragment>
+                        <div>
+                          <label className="block text-sm font-medium text-green-900">Username</label>
+                          <input type="text" required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" value={username} onChange={(e) => setUsername(e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-green-900">Password</label>
+                          <input type="password" required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        </div>
+                      </React.Fragment>
+                    )}
+                    <div>
+                      <button type="submit" disabled={loading} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-md text-sm font-bold text-green-900 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 transition">
+                        {loading ? <Loader2 size={20} /> : 'Masuk Sistem'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const StudentPortal = ({ student, onLogout, settings }) => {
+          const isLulus = student.status === 'Lulus';
+          return (
+            <div className="min-h-screen bg-gray-50 flex flex-col">
+              <header className="bg-white shadow-sm border-b border-green-100">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-600 p-1.5 rounded-md"><GraduationCap size={20} className="text-white" /></div>
+                    <div>
+                        <h1 className="font-bold text-green-900 leading-tight hidden sm:block">{settings.namaSekolah}</h1>
+                        <p className="text-xs text-green-600 font-medium hidden sm:block">Tahun Ajaran {settings.tahunAjaran}</p>
+                    </div>
+                  </div>
+                  <button onClick={onLogout} className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 font-medium transition">
+                    <LogOut size={16} /> Keluar
+                  </button>
+                </div>
+              </header>
+              <main className="flex-1 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden text-center border border-gray-100">
+                  <div className={`py-8 px-4 ${isLulus ? 'bg-green-50 border-b-4 border-green-500' : 'bg-red-50 border-b-4 border-red-500'}`}>
+                     {isLulus ? <CheckCircle size={80} className="text-green-500 mx-auto mb-4" /> : <XCircle size={80} className="text-red-500 mx-auto mb-4" />}
+                     <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-1">Status Kelulusan</h2>
+                     <h3 className={`text-4xl font-extrabold ${isLulus ? 'text-green-700' : 'text-red-700'}`}>{isLulus ? 'ANDA LULUS' : 'TIDAK LULUS'}</h3>
+                  </div>
+                  <div className="p-8">
+                    <div className="space-y-4 mb-8 text-left max-w-md mx-auto">
+                      <div className="border-b border-green-100 pb-2">
+                        <p className="text-sm text-green-600 font-medium">Nama Siswa</p>
+                        <p className="text-lg font-bold text-gray-900">{student.name}</p>
+                      </div>
+                      <div className="border-b border-green-100 pb-2">
+                        <p className="text-sm text-green-600 font-medium">NISN</p>
+                        <p className="text-lg font-bold text-gray-900">{student.nisn}</p>
+                      </div>
+                    </div>
+                    {student.message && <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 italic text-green-900 text-sm">"{student.message}"</div>}
+                    {isLulus && (
+                       <div className="mt-8">
+                         <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg shadow transition">Cetak Surat Keterangan Lulus (SKL)</button>
+                       </div>
+                    )}
+                  </div>
+                </div>
+              </main>
+            </div>
+          );
+        };
+
+        const StudentManagement = () => {
+          const [students, setStudents] = useState([]);
+          const [loading, setLoading] = useState(true);
+          const [search, setSearch] = useState('');
+          const [isModalOpen, setIsModalOpen] = useState(false);
+          const [editingData, setEditingData] = useState(null);
+          const [formData, setFormData] = useState({ nisn: '', name: '', status: 'Lulus', message: '' });
+          const [saving, setSaving] = useState(false);
+
+          useEffect(() => { loadData(); }, []);
+
+          const loadData = async () => {
+            setLoading(true);
+            try {
+              const data = await apiService.getStudents();
+              setStudents(data);
+            } catch(e) { alert("Gagal memuat data siswa"); }
+            setLoading(false);
+          };
+
+          const handleOpenModal = (student = null) => {
+            if (student) { setEditingData(student); setFormData(student); } 
+            else { setEditingData(null); setFormData({ nisn: '', name: '', status: 'Lulus', message: '' }); }
+            setIsModalOpen(true);
+          };
+
+          const handleSubmit = async (e) => {
+            e.preventDefault();
+            setSaving(true);
+            try {
+              await apiService.saveStudent(formData);
+              await loadData();
+              setIsModalOpen(false);
+            } catch(e) { alert("Gagal menyimpan data"); }
+            setSaving(false);
+          };
+
+          const handleDelete = async (id) => {
+            if (window.confirm("Yakin ingin menghapus data siswa ini?")) {
+              await apiService.deleteStudent(id);
+              await loadData();
+            }
+          };
+
+          const filteredStudents = students.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || s.nisn.includes(search));
+
+          return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="p-4 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-green-900">Kelola Data Siswa</h2>
+                  <p className="text-sm text-green-700">Input dan perbarui status kelulusan siswa.</p>
+                </div>
+                <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-green-900 font-bold px-4 py-2 rounded-lg shadow-sm transition">
+                  <UserPlus size={18} /> Tambah Siswa
+                </button>
+              </div>
+              <div className="p-4 sm:p-6 border-b border-gray-100 bg-green-50/30">
+                <div className="relative max-w-md">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search size={20} className="text-green-500" /></div>
+                  <input type="text" placeholder="Cari Nama atau NISN..." className="block w-full pl-10 pr-3 py-2 border border-green-200 rounded-lg focus:ring-green-500 focus:border-green-500 text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-green-50 text-green-800 text-sm uppercase tracking-wider border-b border-green-200">
+                      <th className="p-4 font-bold w-12">No</th>
+                      <th className="p-4 font-bold">NISN</th>
+                      <th className="p-4 font-bold">Nama Lengkap</th>
+                      <th className="p-4 font-bold">Status</th>
+                      <th className="p-4 font-bold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-sm">
+                    {loading ? (<tr><td colSpan="5" className="p-8 text-center text-green-600"><Loader2 size={24} className="mx-auto mb-2" /> Memuat data...</td></tr>) 
+                    : filteredStudents.length === 0 ? (<tr><td colSpan="5" className="p-8 text-center text-gray-500">Tidak ada data.</td></tr>) 
+                    : filteredStudents.map((s, index) => (
+                      <tr key={s.id} className="hover:bg-green-50/50 transition-colors">
+                        <td className="p-4 text-gray-500">{index + 1}</td>
+                        <td className="p-4 font-bold text-green-900">{s.nisn}</td>
+                        <td className="p-4 font-medium text-gray-800">{s.name}</td>
+                        <td className="p-4"><span className={`inline-flex px-2 py-1 text-xs font-bold rounded-full ${s.status === 'Lulus' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{s.status}</span></td>
+                        <td className="p-4 flex justify-end gap-2">
+                          <button onClick={() => handleOpenModal(s)} className="p-1.5 text-yellow-600 hover:bg-yellow-100 rounded" title="Edit"><Edit size={18} /></button>
+                          <button onClick={() => handleDelete(s.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Hapus"><Trash2 size={18} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Modal isOpen={isModalOpen} onClose={() => !saving && setIsModalOpen(false)} title={editingData ? "Edit Data Siswa" : "Tambah Siswa Baru"}>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div><label className="block text-sm font-medium text-green-900 mb-1">NISN</label><input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" value={formData.nisn} onChange={(e) => setFormData({...formData, nisn: e.target.value})} /></div>
+                  <div><label className="block text-sm font-medium text-green-900 mb-1">Nama Lengkap</label><input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} /></div>
+                  <div>
+                    <label className="block text-sm font-medium text-green-900 mb-1">Status Kelulusan</label>
+                    <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
+                      <option value="Lulus">Lulus</option><option value="Tidak Lulus">Tidak Lulus</option>
+                    </select>
+                  </div>
+                  <div><label className="block text-sm font-medium text-green-900 mb-1">Pesan (Opsional)</label><textarea className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 text-sm" value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})}></textarea></div>
+                  <div className="pt-4 border-t flex justify-end gap-3">
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium" disabled={saving}>Batal</button>
+                    <button type="submit" disabled={saving} className="px-4 py-2 text-green-900 bg-yellow-400 hover:bg-yellow-500 rounded-lg font-bold flex gap-2 items-center">{saving ? <Loader2 size={16} /> : 'Simpan Data'}</button>
+                  </div>
+                </form>
+              </Modal>
+            </div>
+          );
+        };
+
+        const AdminManagement = ({ currentUser }) => {
+          const [admins, setAdmins] = useState([]);
+          const [loading, setLoading] = useState(true);
+          const [isModalOpen, setIsModalOpen] = useState(false);
+          const [editingData, setEditingData] = useState(null);
+          const [formData, setFormData] = useState({ name: '', username: '', password: '', role: 'admin' });
+          const [saving, setSaving] = useState(false);
+          const [errorMsg, setErrorMsg] = useState('');
+
+          useEffect(() => { loadData(); }, []);
+          const loadData = async () => { setLoading(true); try { const data = await apiService.getAdmins(); setAdmins(data); } catch(e){} setLoading(false); };
+
+          const handleOpenModal = (admin = null) => {
+            setErrorMsg('');
+            if (admin) { setEditingData(admin); setFormData(admin); } 
+            else { setEditingData(null); setFormData({ name: '', username: '', password: '', role: 'admin' }); }
+            setIsModalOpen(true);
+          };
+
+          const handleSubmit = async (e) => {
+            e.preventDefault();
+            setSaving(true); setErrorMsg('');
+            try {
+              await apiService.saveAdmin(formData);
+              await loadData();
+              setIsModalOpen(false);
+            } catch (err) { setErrorMsg(err.message || "Gagal"); }
+            setSaving(false);
+          };
+
+          const handleDelete = async (id) => {
+            if (id === currentUser.id) return alert("Tidak dapat menghapus diri sendiri.");
+            if (window.confirm("Hapus admin ini?")) { await apiService.deleteAdmin(id); await loadData(); }
+          };
+
+          return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="p-4 sm:p-6 border-b border-gray-200 flex justify-between items-center">
+                <div><h2 className="text-xl font-bold text-green-900">Manajemen Admin</h2><p className="text-sm text-green-700">Khusus Superadmin.</p></div>
+                <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-green-900 px-4 py-2 rounded-lg font-bold"><UserPlus size={18} /> Tambah Admin</button>
+              </div>
+              <table className="w-full text-left border-collapse">
+                <thead><tr className="bg-green-50 text-green-800 text-sm uppercase tracking-wider border-b border-green-200"><th className="p-4 font-bold">Nama</th><th className="p-4 font-bold">Username</th><th className="p-4 font-bold">Peran</th><th className="p-4 font-bold text-right">Aksi</th></tr></thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  {loading ? <tr><td colSpan="4" className="p-8 text-center text-green-600"><Loader2 size={24} className="mx-auto" /></td></tr> : admins.map(a => (
+                    <tr key={a.id} className="hover:bg-green-50/50">
+                      <td className="p-4 font-medium text-gray-800">{a.name}</td><td className="p-4">{a.username}</td>
+                      <td className="p-4"><span className={`px-2 py-1 text-xs font-bold rounded-full ${a.role === 'superadmin' ? 'bg-green-700 text-yellow-300' : 'bg-green-100 text-green-800'}`}>{a.role}</span></td>
+                      <td className="p-4 flex justify-end gap-2">
+                        <button onClick={() => handleOpenModal(a)} className="p-1.5 text-yellow-600 rounded"><Edit size={18} /></button>
+                        {a.id !== currentUser.id && <button onClick={() => handleDelete(a.id)} className="p-1.5 text-red-600 rounded"><Trash2 size={18} /></button>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Modal isOpen={isModalOpen} onClose={() => !saving && setIsModalOpen(false)} title={editingData ? "Edit Admin" : "Tambah Admin"}>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {errorMsg && <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md">{errorMsg}</div>}
+                  <div><label className="block text-sm font-medium text-green-900">Nama Lengkap</label><input type="text" required className="w-full px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} /></div>
+                  <div><label className="block text-sm font-medium text-green-900">Username</label><input type="text" required disabled={!!editingData} className="w-full px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500" value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})} /></div>
+                  <div><label className="block text-sm font-medium text-green-900">Password</label><input type="text" required className="w-full px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} /></div>
+                  <div><label className="block text-sm font-medium text-green-900">Peran</label><select className="w-full px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500" value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} disabled={editingData && editingData.id === currentUser.id}><option value="admin">Admin Biasa</option><option value="superadmin">Superadmin</option></select></div>
+                  <div className="pt-4 flex justify-end gap-3"><button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-100 rounded-lg">Batal</button><button type="submit" disabled={saving} className="px-4 py-2 bg-yellow-400 text-green-900 font-bold rounded-lg flex items-center gap-2">{saving ? <Loader2 size={16} /> : 'Simpan'}</button></div>
+                </form>
+              </Modal>
+            </div>
+          );
+        };
+
+        const SettingsManagement = ({ currentSettings, onSettingsChange }) => {
+          const [formData, setFormData] = useState(currentSettings);
+          const [saving, setSaving] = useState(false);
+          const [message, setMessage] = useState({ type: '', text: '' });
+
+          const handleSubmit = async (e) => {
+            e.preventDefault();
+            setSaving(true); setMessage({ type: '', text: '' });
+            try {
+              await apiService.saveSettings(formData);
+              onSettingsChange(formData);
+              setMessage({ type: 'success', text: 'Pengaturan berhasil disimpan!' });
+            } catch (err) {
+              setMessage({ type: 'error', text: err.message || 'Gagal menyimpan pengaturan.' });
+            }
+            setSaving(false);
+          };
+
+          return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-green-900 mb-2">Pengaturan Aplikasi</h2>
+              <p className="text-sm text-green-700 mb-6">Ubah informasi sekolah yang ditampilkan pada portal.</p>
+
+              {message.text && (
+                <div className={`p-4 mb-6 rounded-md font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700'}`}>
+                  {message.text}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
+                <div>
+                  <label className="block text-sm font-bold text-green-900 mb-1">Nama Sekolah</label>
+                  <input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" value={formData.namaSekolah} onChange={(e) => setFormData({...formData, namaSekolah: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-green-900 mb-1">Tahun Ajaran</label>
+                  <input type="text" required placeholder="Contoh: 2025/2026" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" value={formData.tahunAjaran} onChange={(e) => setFormData({...formData, tahunAjaran: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-green-900 mb-1">Alamat Lengkap Sekolah</label>
+                  <textarea rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 text-sm" value={formData.alamatSekolah} onChange={(e) => setFormData({...formData, alamatSekolah: e.target.value})}></textarea>
+                </div>
+                <div className="pt-4">
+                  <button type="submit" disabled={saving} className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-green-900 rounded-lg font-bold flex items-center gap-2 shadow-sm transition">
+                    {saving ? <Loader2 size={16} /> : 'Simpan Pengaturan'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          );
+        };
+
+        const AdminDashboard = ({ user, onLogout, settings, onSettingsChange }) => {
+          const [activeTab, setActiveTab] = useState('students');
+          const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+          return (
+            <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+              <div className="md:hidden bg-green-900 text-white p-4 flex justify-between items-center">
+                <div className="flex items-center gap-2 font-bold text-yellow-400"><ShieldAlert size={20} /> Admin Portal</div>
+                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>{isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}</button>
+              </div>
+              <aside className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:block w-full md:w-64 bg-green-900 text-white flex-shrink-0`}>
+                <div className="h-16 px-6 border-b border-green-800 hidden md:flex items-center font-bold text-lg gap-2 text-yellow-400"><ShieldAlert size={20} /> Admin Portal</div>
+                <div className="p-4 border-b border-green-800"><p className="text-xs text-green-300 uppercase mb-1">Masuk Sebagai</p><p className="font-semibold">{user.name}</p><span className="inline-block px-2 py-0.5 bg-yellow-500 text-green-900 font-bold rounded text-xs mt-1 capitalize">{user.role}</span></div>
+                <nav className="p-4 space-y-2">
+                  <button onClick={() => {setActiveTab('students'); setIsMobileMenuOpen(false);}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'students' ? 'bg-green-700 text-yellow-300 font-bold' : 'hover:bg-green-800 text-green-100'}`}><Users size={18} /> Data Siswa</button>
+                  {user.role === 'superadmin' && (
+                    <React.Fragment>
+                        <button onClick={() => {setActiveTab('admins'); setIsMobileMenuOpen(false);}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'admins' ? 'bg-green-700 text-yellow-300 font-bold' : 'hover:bg-green-800 text-green-100'}`}><UserPlus size={18} /> Kelola Admin</button>
+                        <button onClick={() => {setActiveTab('settings'); setIsMobileMenuOpen(false);}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'settings' ? 'bg-green-700 text-yellow-300 font-bold' : 'hover:bg-green-800 text-green-100'}`}><SettingsIcon size={18} /> Pengaturan</button>
+                    </React.Fragment>
+                  )}
+                </nav>
+                <div className="p-4 mt-auto absolute md:relative bottom-0 w-full md:w-auto"><button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold"><LogOut size={18} /> Keluar</button></div>
+              </aside>
+              <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+                {activeTab === 'students' && <StudentManagement />}
+                {activeTab === 'admins' && <AdminManagement currentUser={user} />}
+                {activeTab === 'settings' && <SettingsManagement currentSettings={settings} onSettingsChange={onSettingsChange} />}
+              </main>
+            </div>
+          );
+        };
+
+        /* =====================================================================
+         * 4. RENDER APLIKASI
+         * ===================================================================== */
+        function App() {
+          const [currentUser, setCurrentUser] = useState(null);
+          const [settings, setSettings] = useState({ 
+              namaSekolah: 'Portal Pengumuman Kelulusan', 
+              alamatSekolah: '', 
+              tahunAjaran: '2025/2026' 
+          });
+          const [loadingSettings, setLoadingSettings] = useState(true);
+
+          useEffect(() => {
+            const loadInitData = async () => {
+              try {
+                const data = await apiService.getSettings();
+                if (data && data.namaSekolah) setSettings(data);
+              } catch (e) {
+                console.warn("GAS belum terhubung atau tabel Settings belum ada. Menggunakan pengaturan default.");
+              }
+              setLoadingSettings(false);
+            };
+            loadInitData();
+          }, []);
+
+          if (loadingSettings) {
+              return <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center"><Loader2 size={40} className="text-green-600 mb-4" /><p className="text-green-800 font-medium">Memuat Portal...</p></div>;
+          }
+
+          if (!currentUser) return <LoginView onLoginSuccess={setCurrentUser} settings={settings} />;
+          if (currentUser.type === 'siswa') return <StudentPortal student={currentUser.data} onLogout={() => setCurrentUser(null)} settings={settings} />;
+          if (currentUser.type === 'admin') return <AdminDashboard user={currentUser.data} onLogout={() => setCurrentUser(null)} settings={settings} onSettingsChange={setSettings} />;
+          return <div>Role tidak dikenali</div>;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
